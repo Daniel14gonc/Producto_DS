@@ -143,7 +143,6 @@ year_slider = dcc.RangeSlider(
     max=max(available_years) + 1,
     step=1,
     marks={str(available_years[i - 1]): str(available_years[i - 1]) for i in range(0, len(available_years) + 1, 80)},
-
     value=[min(available_years), max(available_years)]
 )
 
@@ -243,7 +242,8 @@ model_selector = dcc.Dropdown(
         {'label': 'C6', 'value': 'C6'},
         {'label': 'C7', 'value': 'C7'}
     ],
-    value='3DCNN'
+    value='3DCNN',
+    style={'color': 'black', 'font-family': 'Helvetica  '}
 )
 
 app = Dash(__name__, suppress_callback_exceptions=True)
@@ -263,13 +263,13 @@ app = Dash(__name__, suppress_callback_exceptions=True)
 # ], style={'background-color': '#FFF'})
 
 app.layout = html.Div([
-    html.H1('Predicciones de fracturas en vértebras cervicales', style={'margin-top': '30px','text-align': 'center', 'font-family': 'Helvetica'}),
+    html.H1('Predicciones de fracturas en vértebras cervicales', style={'text-align': 'center', 'font-family': 'Helvetica', 'color': '#FFF'}),
     html.Div([
             html.Label('Selecciona el modelo que se va a utilizar:'),
             model_selector,
-        ], style = {'font-family': 'Helvetica'}),
+        ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#FFF'}),
     html.Div(id='output-div'),
-], style={'background-color': '#FFF'})
+], style={'background-color': '#051367'})
 
 @app.callback(
     Output('output-div', 'children'),
@@ -308,17 +308,37 @@ def execute_action(selected_action):
                     html.Div([
                             html.Label('Selecciona el rango de épocas:'),
                             slider,
-                        ], style = {'font-family': 'Helvetica'}),
+                        ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#FFF'}),
                     
                     # Agrega la sección de carga de archivos
                     html.Div([
+                        html.H3('Realizar una predicción', style={'padding': '10px', 'color': '#FFFFFF', 'font-family': 'Helvetica', "text-align": "center"}),
                         dcc.Upload(
                             id='upload-data',
-                            children=html.Button('Cargar archivo'),
-                            multiple=False  # Para permitir la carga de un solo archivo a la vez
+                            children=html.Button('Cargar tu imagen aquí', style={'width': '200px', 
+                                                                                 'height': '60px', 
+                                                                                 'lineHeight': '60px', 
+                                                                                 'borderWidth': '1px', 
+                                                                                 'borderRadius': '5px',
+                                                                                 'textAlign': 'center',
+                                                                                 'color': '#fff',  # Color del texto
+                                                                                 'backgroundColor': '#0074D9',  # Color de fondo del botón
+                                                                                 'cursor': 'pointer',
+                                                                                 'font-family': 'Helvetica'
+                                                                                }                   
+                                                ),
+                            multiple=False,  # Para permitir la carga de un solo archivo a la vez
+                             style={
+                                'width': '100%',
+                                'height': '60px',
+                                'lineHeight': '60px',
+                                'borderWidth': '1px',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+                            }
                         ),
                         html.Div(id='output-data-upload')  # Aquí se mostrará el resultado de la carga
-                    ]),
+                    ], style={'padding': '20px', 'color': '#FFF'}),
                 ])
 
 
@@ -366,10 +386,12 @@ def update_time_series_graph(relayoutData, selected_years):
 
     figura = px.line(df, x=epochs, y='Value', 
                     title=f'Accuracy {name}', labels={'Value': 'Value'})
-    figura.update_layout(paper_bgcolor='#ECEBE4')
+    figura.update_layout(paper_bgcolor='#fff')
     # figura = px.line(filtered_df, x='Fecha', y='Gasolina_regular', title='Serie de Tiempo')
     # figura.update_traces(line=dict(color='#153B50'))
     figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Value'))
+
+    figura.update_layout(title=dict(text=f'Accuracy {name}', x=0.5))
     # figura.update_traces(line=dict(color='#CC998D'), selector=dict(name='Gasolina_regular_pred'))
     
     # figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Gasolina_regular'), 
@@ -516,10 +538,12 @@ def update_time_series_graph(relayoutData, selected_years):
 
     figura = px.line(df, x=epochs, y='Value', 
                     title=f'Loss {name}', labels={'Value': 'Value'})
-    figura.update_layout(paper_bgcolor='#ECEBE4')
+    figura.update_layout(paper_bgcolor='#fff')
     # figura = px.line(filtered_df, x='Fecha', y='Gasolina_regular', title='Serie de Tiempo')
     # figura.update_traces(line=dict(color='#153B50'))
-    figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Value'))
+    figura.update_traces(line=dict(color='#00FF00'), selector=dict(name='Value'))
+
+    figura.update_layout(title=dict(text=f'Loss {name}', x=0.5))
     # figura.update_traces(line=dict(color='#CC998D'), selector=dict(name='Gasolina_regular_pred'))
     
     # figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Gasolina_regular'), 
