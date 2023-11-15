@@ -18,6 +18,9 @@ import numpy as np
 from PIL import Image
 from EffGRU import CombinedModel
 from zipfile import ZipFile
+from scipy import ndimage
+import pydicom
+from pydicom.pixel_data_handlers.util import apply_voi_lut
 
 
 # Define la función para preprocesar las imágenes para VGG16 y CombinedModel
@@ -315,7 +318,7 @@ def execute_action(selected_action):
                         html.H3('Realizar una predicción', style={'padding': '10px', 'color': '#FFFFFF', 'font-family': 'Helvetica', "text-align": "center"}),
                         dcc.Upload(
                             id='upload-data',
-                            children=html.Button('Cargar tu imagen aquí', style={'width': '200px', 
+                            children=html.Button('Carga tus imagenes aquí', style={'width': '200px', 
                                                                                  'height': '60px', 
                                                                                  'lineHeight': '60px', 
                                                                                  'borderWidth': '1px', 
@@ -337,7 +340,7 @@ def execute_action(selected_action):
                                 'textAlign': 'center',
                             }
                         ),
-                        html.Div(id='output-data-upload')  # Aquí se mostrará el resultado de la carga
+                        html.Div(id='output-data-upload', style={'font-family': 'Arial', 'textAlign': 'center'})  # Aquí se mostrará el resultado de la carga
                     ], style={'padding': '20px', 'color': '#FFF'}),
                 ])
 
@@ -482,10 +485,92 @@ def prediccionesEfficientNet(ruta, path_modelo, contents):
         html.Img(src=contents, height=200),
         "Predicción: {}".format(prediction)
     ])
+
+def extract_number(filename):
+    # Extraer el número de la cadena (por ejemplo, "10" de "10.dcm")
+    return int(filename.split('.')[0])
+
+def read_images(path):
+    volumes = []
+    with ZipFile(path, 'r') as zipObj:
+        image_files = zipObj.namelist()
+        for i, image_file in enumerate(image_files):
+            if i >= 500:
+                break
+            if image_file.endswith('.jpg'):
+                with zipObj.open(image_file) as img_file:
+                    image = Image.open(img_file)
+                    volumes.append(image)
+    # # Obtener la lista de nombres de archivos de imágenes
+    # image_files = os.listdir(path)
+    # image_files.sort(key=extract_number)  # Asegura un orden adecuado
     
+    # # Inicializar una lista para almacenar los volúmenes 3D
+    # volumes = []
+
+    # # Leer y apilar las imágenes en un volumen 3D
+    # for image_file in image_files:
+    #     image_path = os.path.join(path, image_file)
+    #     dicom_data = pydicom.dcmread(image_path)
+    #     image = apply_voi_lut(dicom_data.pixel_array, dicom_data)
+    #     volumes.append(image)
+    # Convertir la lista de volúmenes a un arreglo NumPy 3D
+    volumes_array = np.stack(volumes, axis=-1)
+
+    # Normalizar los valores de píxeles en el rango [0, 1]
+    # Esto puede variar dependiendo de la información específica de las imágenes DICOM
+    volumes_array = (volumes_array - np.min(volumes_array)) / (np.max(volumes_array) - np.min(volumes_array))
+    return volumes_array
+
+def normalize(volume):
+    """Normalize the volume"""
+    min = -1000
+    max = 400
+    volume[volume < min] = min
+    volume[volume > max] = max
+    volume = (volume - min) / (max - min)
+    volume = volume.astype("float32")
+    return volume
+
+def resize_volume(img):
+    """Resize across z-axis"""
+    # Set the desired depth
+    desired_depth = 300
+    desired_width = 256
+    desired_height = 256
+    # Get current depth
+    current_depth = img.shape[-1]
+    current_width = img.shape[0]
+    current_height = img.shape[1]
+    # Compute depth factor
+    depth = current_depth / desired_depth
+    width = current_width / desired_width
+    height = current_height / desired_height
+    depth_factor = 1 / depth
+    width_factor = 1 / width
+    height_factor = 1 / height
+    # Rotate
+    img = ndimage.rotate(img, 90, reshape=False)
+    # Resize across z-axis
+    img = ndimage.zoom(img, (width_factor, height_factor, depth_factor), order=1)
+    return img
+
+def get_volume(path):
+    """Read and resize volume"""
+    # Read scan
+    print("read scan")
+    volume = read_images(path)
+    # Normalize
+    volume = normalize(volume)
+    # Resize width, height and depth
+    volume = resize_volume(volume)
+    print("scan returned")
+    return volume
 
 
 def predicciones3DCNN(ruta, path_modelo, contents):
+    # volume = get_volume(ruta)
+    # print("I just got the volume", volume.shape)
     model3D = Simple3DCNN(7)
     model3D.load_state_dict(torch.load(path_modelo))
     model3D.to('cuda')
