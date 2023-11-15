@@ -340,8 +340,8 @@ def execute_action(selected_action):
                                 'textAlign': 'center',
                             }
                         ),
-                        html.Div(id='output-data-upload', style={'font-family': 'Arial', 'textAlign': 'center'})  # Aquí se mostrará el resultado de la carga
-                    ], style={'padding': '20px', 'color': '#FFF'}),
+                        html.Div(id='output-data-upload', style={'font-family': 'Arial', 'textAlign': 'center', 'padding-top': '50px'})  # Aquí se mostrará el resultado de la carga
+                    ], style={'padding': '20px', 'color': '#FFF', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'flex-direction': 'column'}),
                 ])
 
 
@@ -599,7 +599,7 @@ def predicciones3DCNN(ruta, path_modelo, contents):
     return html.Div([
         # "Archivo cargado y guardado: {}".format(filename),
         # Mostrar la imagen subida
-        html.Img(src=contents, height=200),
+        # html.Img(src=contents, height=200),
         html.Table([
         # Encabezado de la tabla
         html.Tr([html.Th("  C1  "), html.Th("   C2  "), html.Th("   C3  "), html.Th("   C4  "), html.Th("   C5  "), html.Th("   C6  "), html.Th("   C7  ")]),
