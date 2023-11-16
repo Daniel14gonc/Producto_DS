@@ -266,19 +266,30 @@ app = Dash(__name__, suppress_callback_exceptions=True)
 # ], style={'background-color': '#FFF'})
 
 app.layout = html.Div([
-    html.H1('Predicciones de fracturas en vértebras cervicales', style={'text-align': 'center', 'font-family': 'Helvetica', 'color': '#FFF'}),
+    html.H1('Predicciones de fracturas en vértebras cervicales', style={'text-align': 'center', 'font-family': 'Helvetica', 'color': '#FFF', 'padding-top': '30px'}),
     html.Div([
             html.Label('Selecciona el modelo que se va a utilizar:'),
             model_selector,
         ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#FFF'}),
+    dcc.Checklist(
+        id='toggle-switch',
+        options=[
+            {'label': 'Mostrar rendimiento de modelo', 'value': 'on'}
+        ],
+        value=['on'],
+        style={'color': '#FFF', 'margin-left': '20px', 'font-size': '16px', 'font-family': 'Helvetica', 'padding-bottom': '20px'}
+    ),
     html.Div(id='output-div'),
 ], style={'background-color': '#051367'})
 
 @app.callback(
     Output('output-div', 'children'),
-    [Input('model-selector', 'value')]
+    [Input('model-selector', 'value'), Input('toggle-switch', 'value')]
 )
-def execute_action(selected_action):
+def execute_action(selected_action, toggle_switch_value):
+    display = 'none'
+    if toggle_switch_value == ['on']:
+        display = 'block'
     # if selected_action == '3DCNN':
     if selected_action in modelos:
         global current_model
@@ -307,11 +318,11 @@ def execute_action(selected_action):
                     html.Div([
                         dcc.Graph(id='grafico-tiempo', style={'width': '50%', 'display': 'inline-block'}),
                         dcc.Graph(id='grafico-loss', style={'width': '50%', 'display': 'inline-block'}),
-                    ], style={'background-color': '#FFFFFF'}),
+                    ], style={'background-color': '#FFFFFF', 'display': display}),
                     html.Div([
                             html.Label('Selecciona el rango de épocas:'),
                             slider,
-                        ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#000000', 'background-color': '#FFFF'}),
+                        ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#000000', 'background-color': '#FFFF', 'display': display}),
                     
                     # Agrega la sección de carga de archivos
                     html.Div([
@@ -340,7 +351,7 @@ def execute_action(selected_action):
                                 'textAlign': 'center',
                             }
                         ),
-                        html.Div(id='output-data-upload', style={'font-family': 'Arial', 'textAlign': 'center', 'padding-top': '50px'})  # Aquí se mostrará el resultado de la carga
+                        html.Div(id='output-data-upload', style={'font-family': 'Arial', 'textAlign': 'center', 'padding-top': '50px', 'font-color': '#000'})  # Aquí se mostrará el resultado de la carga
                     ], style={'background-color': '#F0F0F0','padding': '20px', 'color': '#FFF', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'flex-direction': 'column'}),
                 ])
 
@@ -391,15 +402,15 @@ def update_time_series_graph(relayoutData, selected_years):
                     title=f'Accuracy {name}', labels={'Value': 'Value'})
     figura.update_layout(paper_bgcolor='#fff')
     # figura = px.line(filtered_df, x='Fecha', y='Gasolina_regular', title='Serie de Tiempo')
-    # figura.update_traces(line=dict(color='#153B50'))
-    figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Value'))
+    figura.update_traces(line=dict(color='#2D31FA'))
+    # figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Value'))
 
-    figura.update_layout(title=dict(text=f'Accuracy {name}', x=0.5))
-    # figura.update_traces(line=dict(color='#CC998D'), selector=dict(name='Gasolina_regular_pred'))
+    # figura.update_layout(title=dict(text=f'Accuracy {name}', x=0.5))
+    # figura.update_traces(line=dict(color='#CC998D'), selector=dict(name='Value'))
     
-    # figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Gasolina_regular'), 
+    # figura.update_traces(line=dict(color='#153B50'), selector=dict(name='Value'), 
     #                      name='Gasolina Regular')
-    # figura.update_traces(line=dict(color='#CC998D'), selector=dict(name='Gasolina_regular_pred'), 
+    # figura.update_traces(line=dict(color='#CC998D'), selector=dict(name='Value'), 
     #                      name='Gasolina Regular Predicha')
     # figura.update_yaxes(title_text='Galones importados')
     return figura
@@ -482,9 +493,8 @@ def prediccionesEfficientNet(ruta, path_modelo, contents):
     return html.Div([
         # "Archivo cargado y guardado: {}".format(filename),
         # Mostrar la imagen subida
-        html.Img(src=contents, height=200),
-        "Predicción: {}".format(prediction)
-    ])
+        html.Th("Predicción: {}".format(prediction))
+    ], style={'font-color': '#000', 'color': '#000'})
 
 def extract_number(filename):
     # Extraer el número de la cadena (por ejemplo, "10" de "10.dcm")
@@ -604,7 +614,8 @@ def predicciones3DCNN(ruta, path_modelo, contents):
         # Encabezado de la tabla
         html.Tr([html.Th("  C1  "), html.Th("   C2  "), html.Th("   C3  "), html.Th("   C4  "), html.Th("   C5  "), html.Th("   C6  "), html.Th("   C7  ")]),
         # Fila de valores
-        html.Tr([html.Td(valores[0]), html.Td(valores[1]), html.Td(valores[2]), html.Td(valores[3]), html.Td(valores[4]), html.Td(valores[5]), html.Td(valores[6])])])
+        html.Tr([html.Td(valores[0]), html.Td(valores[1]), html.Td(valores[2]), html.Td(valores[3]), html.Td(valores[4]), html.Td(valores[5]), html.Td(valores[6])])],
+        style={'font-color': '#000', 'color': '#000'})
 
     ])
 
@@ -624,6 +635,7 @@ def update_time_series_graph(relayoutData, selected_years):
     figura = px.line(df, x=epochs, y='Value', 
                     title=f'Loss {name}', labels={'Value': 'Value'})
     figura.update_layout(paper_bgcolor='#fff')
+    figura.update_traces(line=dict(color='#2D31FA'))
     # figura = px.line(filtered_df, x='Fecha', y='Gasolina_regular', title='Serie de Tiempo')
     # figura.update_traces(line=dict(color='#153B50'))
     figura.update_traces(line=dict(color='#00FF00'), selector=dict(name='Value'))
