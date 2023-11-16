@@ -307,15 +307,15 @@ def execute_action(selected_action):
                     html.Div([
                         dcc.Graph(id='grafico-tiempo', style={'width': '50%', 'display': 'inline-block'}),
                         dcc.Graph(id='grafico-loss', style={'width': '50%', 'display': 'inline-block'}),
-                    ]),
+                    ], style={'background-color': '#FFFFFF'}),
                     html.Div([
                             html.Label('Selecciona el rango de épocas:'),
                             slider,
-                        ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#FFF'}),
+                        ], style = {'font-family': 'Helvetica', 'padding': '20px', 'color': '#000000', 'background-color': '#FFFF'}),
                     
                     # Agrega la sección de carga de archivos
                     html.Div([
-                        html.H3('Realizar una predicción', style={'padding': '10px', 'color': '#FFFFFF', 'font-family': 'Helvetica', "text-align": "center"}),
+                        html.H3('Realizar una predicción', style={'padding': '10px', 'color': '#000000', 'font-family': 'Helvetica', "text-align": "center"}),
                         dcc.Upload(
                             id='upload-data',
                             children=html.Button('Carga tus imagenes aquí', style={'width': '200px', 
@@ -327,7 +327,7 @@ def execute_action(selected_action):
                                                                                  'color': '#fff',  # Color del texto
                                                                                  'backgroundColor': '#0074D9',  # Color de fondo del botón
                                                                                  'cursor': 'pointer',
-                                                                                 'font-family': 'Helvetica'
+                                                                                 'font-family': 'Helvetica',
                                                                                 }                   
                                                 ),
                             multiple=False,  # Para permitir la carga de un solo archivo a la vez
@@ -341,7 +341,7 @@ def execute_action(selected_action):
                             }
                         ),
                         html.Div(id='output-data-upload', style={'font-family': 'Arial', 'textAlign': 'center', 'padding-top': '50px'})  # Aquí se mostrará el resultado de la carga
-                    ], style={'padding': '20px', 'color': '#FFF', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'flex-direction': 'column'}),
+                    ], style={'background-color': '#F0F0F0','padding': '20px', 'color': '#FFF', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center', 'flex-direction': 'column'}),
                 ])
 
 
